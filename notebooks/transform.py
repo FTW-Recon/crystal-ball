@@ -56,7 +56,7 @@ def apply_winner_check(team, matches):
 
         cond = (matches["round"] == m_round) & (matches[location] == id_team)
         home_win = matches.loc[cond, "home_win"].values[0]
-        draw = matches.loc[cond, "draw"].values[0]
+        draw = matches.loc[cond, "was_draw"].values[0]
 
         if draw: return False 
         return home_team == home_win
@@ -86,7 +86,7 @@ def apply_match_points(team):
     def match_points(row):
         if row["has_won"]:
             return 3
-        if row['draw']:
+        if row["was_draw"]:
             return 1
         return 0
 
@@ -105,7 +105,7 @@ def apply_check_draw(team, matches):
                 (matches.home_team == id_team)
                 | (matches.away_team == id_team)
             ),
-            "draw"
+            "was_draw"
         ].values[0]
 
         return draw
@@ -163,10 +163,13 @@ def calcule_championship_position(team):
         df_r = df_r.reset_index(drop=True)
 
         for t in ids:
-            team.loc[
-                (team.id_team == t)
-                & (team['round'] == r),
-                position
-            ] = df_r.index[df_r.id_team == t].values[0] + 1
-    
+            try:
+                team.loc[
+                    (team.id_team == t)
+                    & (team['round'] == r),
+                    position
+                ] = df_r.index[df_r.id_team == t].values[0] + 1
+            except:
+                continue
+
     return team
